@@ -373,7 +373,7 @@ function addEmployee() {
           {
             first_name: answer.first,
             last_name: answer.last,
-            role_id: parseInt(answer.role.split("")),
+            role_id: parseInt(answer.role.split(" ")),
           },
           function (err, res) {
             if (err) throw err;
@@ -423,7 +423,7 @@ function addRole() {
           {
             title: answer.role,
             salary: answer.salary,
-            department_id: parseInt(answer.department.split("")),
+            department_id: parseInt(answer.department.split(" ")),
           },
           function (err, res) {
             if (err) throw err;
