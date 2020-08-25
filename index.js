@@ -6,6 +6,20 @@ const { async } = require("rxjs");
 require("console.table");
 
 
+const util = require("util");
+const mysql = require('mysql');
+
+const connection = mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password: "6822",
+    database: "employees"
+});
+
+connection.connect();
+
+connection.query = util.promisify(connection.query);
+
 
 function init() {
   const logoText = logo({ name: "Employee Manager" }).render();
@@ -83,39 +97,39 @@ async function loadMainPrompts() {
       ]
     }
   ]);
-}
-
-switch (choice) {
-  case "VIEW_EMPLOYEES":
-    return viewEmployees();
-  case "VIEW_EMPLOYEES_BY_DEPARTMENT":
-    return viewEmployeesByDepartment();
-  case "VIEW_EMPLOYEES_BY_MANAGER":
-    return viewEmployeesByManager();
-  case "ADD_EMPLOYEE":
-    return addEmployee();
-  case "REMOVE_EMPLOYEE":
-return removeEmployee();
-case "UPDATE_EMPLOYEE_ROLE":
-    return updateEmployeeRole();
-  case "VIEW_DEPARTMENT":
-    return viewDepartments();
-  case "ADD_DEPARTMENT":
-    return addDepartment();
-  case "REMOVE_DEPARTMENT":
-    return removeDepartment();
-  case "VIEW_ROLES":
-    return viewRoles();
-  case "ADD_ROLES":
-    return addRole();
-  case "REMOVE_ROLES":
-    return removeRole();
-  default:
-    return quit();
+  
+  switch (choice) {
+    case "VIEW_EMPLOYEES":
+      return viewEmployees();
+    case "VIEW_EMPLOYEES_BY_DEPARTMENT":
+      return viewEmployeesByDepartment();
+    case "VIEW_EMPLOYEES_BY_MANAGER":
+      return viewEmployeesByManager();
+    case "ADD_EMPLOYEE":
+      return addEmployee();
+    case "REMOVE_EMPLOYEE":
+  return removeEmployee();
+  case "UPDATE_EMPLOYEE_ROLE":
+      return updateEmployeeRole();
+    case "VIEW_DEPARTMENT":
+      return viewDepartments();
+    case "ADD_DEPARTMENT":
+      return addDepartment();
+    case "REMOVE_DEPARTMENT":
+      return removeDepartment();
+    case "VIEW_ROLES":
+      return viewRoles();
+    case "ADD_ROLE":
+      return addRole();
+    case "REMOVE_ROLE":
+      return removeRole();
+    default:
+      return quit();
+  }
 }
 
 async function viewEmployees() {
-    var query = "SELECT first_name, last_name FROM employees_db.employee";
+    var query = "SELECT first_name, last_name FROM employees.employee";
     var employeeArr = [];
     connection.query(query, function(err, res){
         // var stringifyRes = JSON.stringify(res);
@@ -126,8 +140,9 @@ async function viewEmployees() {
             employeeArr.push(data[i].first_name + " " + data[i].last_name);
         }
         console.table("Employees", employeeArr);
+        loadMainPrompts();
     });
-    loadMainPrompts();
+    
 }
 
 async function viewEmployeesByDepartment() {
@@ -156,8 +171,9 @@ function addRole() {
                     choices: departmentArr,
                     name: "department"
                 }
-            ])
-    })
+            ]);
+            loadMainPrompts();
+    });
 }
 
 function quit() {
