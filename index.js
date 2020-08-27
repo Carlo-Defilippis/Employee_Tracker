@@ -48,14 +48,6 @@ async function loadMainPrompts() {
             value: "REMOVE_EMPLOYEE",
           },
           {
-            name: "Update employee role",
-            value: "UPDATE_EMPLOYEE_ROLE",
-          },
-          {
-            name: "Update employee manager",
-            value: "UPDATE_EMPLOYEE_MANAGER",
-          },
-          {
             name: "View all roles",
             value: "VIEW_ROLES",
           },
@@ -95,13 +87,11 @@ switch (choice) {
     return addEmployee();
   case "REMOVE_EMPLOYEE":
     return removeEmployee();
-  case "UPDATE_EMPLOYEE_ROLE":
-    return updateEmployeeRole();
   case "VIEW_DEPARTMENTS":
     return viewDepartments();
   case "ADD_DEPARTMENT":
     return addDepartment();
-  case "REMOVE_DEPARTMENT":
+  case "REMOVE_DEPARTMENTS":
     return removeDepartment();
   case "VIEW_ROLES":
     return viewRole();
@@ -115,12 +105,6 @@ switch (choice) {
 }
 
 start();
-// view all departments
-async function viewDepartments() {
-  const departments = await db.findAllDepartments();
-    console.table(departments);
-    loadMainPrompts();
-}
 
 // view employees with their role title, role salary, and dept_name
 async function viewEmployees() {
@@ -128,30 +112,6 @@ async function viewEmployees() {
     console.table(employees);
     loadMainPrompts();
 }
-
-// view roles combined with the department name
-async function viewRole() {
-  const roles = await db.findAllRole();
-    console.table(roles);
-    loadMainPrompts();
-}
-
-// add a new department - must be unique
-function addDepartment() {
-  inquirer
-    .prompt({
-      type: "input",
-      message: "What is the name of the department you want to add?",
-      name: "department",
-    })
-    .then(async function (answer) {
-      const addDepart = await db.createDepartment(answer);
-      const showDept = await db.findAllDepartments();
-      console.table(showDept);
-      console.log(emoji.get('heart') + "  New department added! " + emoji.get('heart'));
-      loadMainPrompts();
-    });
-  }
 
 // add a new employee with first and last name, and role title
 function addEmployee() {
@@ -214,11 +174,76 @@ function removeEmployee() {
             const removeEmp = await db.deleteEmployee(parsed);
             const showEmpDel = await db.findAllEmployees();
             console.table(showEmpDel);
-            console.log(emoji.get('broken_heart') + "  Employee deleted! Updated list is above. " + emoji.get('broken_heart'));
+            console.log(emoji.get('heart') + "  Employee deleted! Updated list is above. " + emoji.get('heart'));
             loadMainPrompts();
       });
   });
 }
+
+
+// view all departments
+async function viewDepartments() {
+  const departments = await db.findAllDepartments();
+    console.table(departments);
+    loadMainPrompts();
+}
+
+
+// add a new department - must be unique
+function addDepartment() {
+  inquirer
+    .prompt({
+      type: "input",
+      message: "What is the name of the department you want to add?",
+      name: "department",
+    })
+    .then(async function (answer) {
+      const addDepart = await db.createDepartment(answer);
+      const showDept = await db.findAllDepartments();
+      console.table(showDept);
+      console.log(emoji.get('heart') + "  New department added! " + emoji.get('heart'));
+      loadMainPrompts();
+    });
+  }
+
+
+//removes departments
+function removeDepartment() {
+  var empRole = "SELECT * FROM department ORDER BY id";
+  connection.query(empRole, function (err, res) {
+    if (err) throw err;
+    var empArr = [];
+    for (var i = 0; i < res.length; i++) {
+      empArr.push(res[i].id + ": " + res[i].dept_Name);
+    }
+    inquirer.prompt([
+        {
+          type: "list",
+          message: "Please select the department you would like to delete",
+          choices: empArr,
+          name: "title",
+        },
+      ])
+      .then(async function (answer) {
+            const parsed2 = parseInt(answer.title.split(" "));
+            console.log(parsed2);
+            const removeDept = await db.deleteDeparment(parsed2);
+            const showDeptDel = await db.findAllDepartments();
+            console.table(showDeptDel);
+            console.log(emoji.get('heart') + "  Department and corresponding employees deleted! Updated list is above. " + emoji.get('heart'));
+            loadMainPrompts();
+      });
+  });
+}
+
+
+// view roles combined with the department name
+async function viewRole() {
+  const roles = await db.findAllRole();
+    console.table(roles);
+    loadMainPrompts();
+}
+
 
 
 // add a new role from the existing deptartments with base salary
@@ -258,6 +283,36 @@ function addRole() {
       });
   });
 }
+
+function removeRole() {
+  var empRole = "SELECT * FROM role ORDER BY id";
+  connection.query(empRole, function (err, res) {
+    if (err) throw err;
+    var empArr = [];
+    for (var i = 0; i < res.length; i++) {
+      empArr.push(res[i].id + ": " + res[i].title);
+    }
+    inquirer.prompt([
+        {
+          type: "list",
+          message: "Please select the role you would like to delete",
+          choices: empArr,
+          name: "title",
+        },
+      ])
+      .then(async function (answer) {
+            const parsed1 = parseInt(answer.title.split(" "));
+            console.log(parsed1);
+            const removeRole = await db.deleteRole(parsed1);
+            const showRoleDel = await db.findAllRole();
+            console.table(showRoleDel);
+            console.log(emoji.get('heart') + "  Role deleted! Updated list is above. " + emoji.get('heart'));
+            loadMainPrompts();
+      });
+  });
+}
+
+
 
 // exit out of the application
 function quit() {

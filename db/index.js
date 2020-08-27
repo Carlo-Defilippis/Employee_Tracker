@@ -44,13 +44,14 @@ class DB {
 
     //delete department roles and employee
     deleteEmployee(employeeId){
-        return this.connection.query(`DELETE FROM employee WHERE role_id =${employeeId};`);
+        return this.connection.query(`DELETE FROM employee WHERE role_id = ${employeeId};`);
     }
     deleteRole(roleId){
-        return this.connection.query (`DELETE FROM role WHERE id=${roleId};`);
+        return this.connection.query (`DELETE FROM role WHERE id = ${roleId};`);
     }
     deleteDeparment(departmentId){
-        return this.connection.query (`DELETE FROM department WHERE id=${departmentId};`);
+        this.connection.query (`DELETE FROM department WHERE id=${departmentId};`);
+        return this.connection.query (`DELETE FROM role WHERE id=${departmentId};`);
     }
 }
 
