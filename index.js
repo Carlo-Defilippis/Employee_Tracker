@@ -5,12 +5,12 @@ const { inherits } = require("util");
 const { async } = require("rxjs");
 require("console.table");
 var connection = require("./db/connection.js");
-var DataB = require("./db/index.js");
 var emoji = require('node-emoji');
-
+var CLI = require('clui')
 
 const util = require("util");
-const mysql = require('mysql');
+const { clearScreenDown } = require("readline");
+// const mysql = require('mysql');
 
 connection.connect(function(err) {
   if (err) {
@@ -32,7 +32,7 @@ loadMainPrompts();
 
 async function loadMainPrompts() {
   console.log("This is the load prompts function")
-  const answer = await inquirer.prompt([
+  const { choice } = await inquirer.prompt([
       {
         type: "list",
         name: "choice",
@@ -93,13 +93,13 @@ async function loadMainPrompts() {
           {
             name: "Quit",
             value: "QUIT",
-          }
+          }, new inquirer.Separator()
         ]
       }
     ]);
 
   
-switch (answer.choice) {
+switch (choice) {
   case "VIEW_EMPLOYEES":
     return viewEmployees();
   case "VIEW_EMPLOYEES_BY_DEPARTMENT":
@@ -112,7 +112,7 @@ switch (answer.choice) {
     return removeEmployee();
   case "UPDATE_EMPLOYEE_ROLE":
     return updateEmployeeRole();
-  case "VIEW_DEPARTMENT":
+  case "VIEW_DEPARTMENTS":
     return viewDepartments();
   case "ADD_DEPARTMENT":
     return addDepartment();
@@ -132,54 +132,32 @@ switch (answer.choice) {
 
 init();
 // view all departments
-function viewDepartments() {
-  var query = "SELECT * FROM department ORDER BY id";
-  connection.query(query, function (err, res) {
-    if (err) throw err;
-    // console.log("all departments: ", res);
-
-    console.table(res);
-    console.log("============================================================");
+async function viewDepartments() {
+  const departments = await db.findAllDepartments();
+    console.table(departments);
     loadMainPrompts();
-  });
 }
+
+
+
+
 
 // view employees with their role title, role salary, and dept_name
 async function viewEmployees() {
-  const employees = new DataB().findAllEmployees();
-  console.log("This is the find all employee function from connection.js: ", employees);
-  // var query =
-  //   "SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.dept_name FROM employee INNER JOIN role ON role_id=role.id INNER JOIN department ON department.id=role.department_id;";
-  // connection.query(query, function (err, res) {
-  //   if (err) throw err;
-  //   // console.log("all employees: ", res);
-  //   console.table(res);
-    console.log("============================================================");
-  function wait(ms)
-{
-    var d = new Date();
-    var d2 = null;
-    do { d2 = new Date(); }
-    while(d2-d < ms);
-}
-wait(100);
-
+  const employees = await db.findAllEmployees();
+    console.table(employees);
     loadMainPrompts();
-    console.log("============================================================");
-  // });
 }
+
+
+
+
 
 // view roles combined with the department name
-function viewRole() {
-  var query =
-    "SELECT department.dept_name, role.title, role.salary FROM department INNER JOIN role ON department.id=role.department_id ORDER BY dept_name";
-  connection.query(query, function (err, res) {
-    if (err) throw err;
-    // console.log("all roles: ", res);
-    console.table(res);
-    console.log("============================================================");
+async function viewRole() {
+  const roles = await db.findAllRole();
+    console.table(roles);
     loadMainPrompts();
-  });
 }
 
 // add a new department - must be unique
@@ -190,21 +168,12 @@ function addDepartment() {
       message: "What is the name of the department you want to add?",
       name: "department",
     })
-    .then(function (answer) {
-      var query = "INSERT INTO department SET ?";
-      connection.query(query, { dept_name: answer.department }, function (
-        err,
-        res
-      ) {
-        if (err) throw err;
-        console.log("added new department");
-        console.log(
-          "============================================================"
-        );
-        loadMainPrompts();
+    .then(async function (answer) {
+      const addDepart = await db.createDepartment(answer);
+      console.table(addDepart);
+      loadMainPrompts();
       });
-    });
-}
+    };
 
 // add a new employee with first and last name, and role title
 function addEmployee() {
@@ -262,8 +231,9 @@ function addRole() {
   connection.query(dept, function (err, res) {
     var deptArr = [];
     for (var i = 0; i < res.length; i++) {
-      deptArr.push(res[i].id + ": " + res[i].dept_name);
+      deptArr.push(res[i].id + ": " + res[i].dept_Name);
     }
+    console.log(deptArr)
     inquirer
       .prompt([
         {
@@ -275,7 +245,7 @@ function addRole() {
         {
           type: "input",
           message: "What is title of the role you want to add?",
-          name: "role",
+          name: "title",
         },
         {
           type: "number",
@@ -283,25 +253,13 @@ function addRole() {
           name: "salary",
         },
       ])
-      .then(function (answer) {
-        console.log("answer: ", answer);
-        var query = "INSERT INTO role SET ?";
-        connection.query(
-          query,
-          {
-            title: answer.role,
-            salary: answer.salary,
-            department_id: parseInt(answer.department.split(" ")),
-          },
-          function (err, res) {
-            if (err) throw err;
-            console.log("Added new role");
-            console.log(
-              "============================================================"
-            );
-            loadMainPrompts();
-          }
-        );
+      .then(async function (answer) {
+        // var query = "INSERT INTO role SET ?";
+        const addRole = await db.createRole(answer);
+        const showRoles = await db.findAllRole();
+        console.table(showRoles);
+        console.log(emoji.get('heart') + "  New role added! " + emoji.get('heart'));
+        loadMainPrompts();
       });
   });
 }
@@ -310,8 +268,18 @@ function addRole() {
 
 // exit out of the application
 function quit() {
-  console.log(emoji.get('heart') + "  Thank you for using my employees app! Bye! " + emoji.get('heart'));
-  process.exit(0);
+Spinner = CLI.Spinner; 
+var countdown = new Spinner('  Thank you for using my employees app! Exiting in 5 seconds...  ' + emoji.get('heart'), ['⣾','⣽','⣻','⢿','⡿','⣟','⣯','⣷']); 
+countdown.start(); 
+var number = 5;
+setInterval(function () {
+  number--;
+  countdown.message('  Thank you for using my employees app! Exiting in ' + number + ' seconds...  ' + emoji.get('heart'));
+  if (number === 0) {
+    process.stdout.write('\n');
+    process.exit(0);
+  }
+}, 500);
 }
 
 exports.data = loadMainPrompts;

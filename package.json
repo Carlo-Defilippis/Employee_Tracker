@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "echo bash && node index.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,8 @@
   "homepage": "https://github.com/Carlo-Defilippis/Employee_Tracker#readme",
   "dependencies": {
     "asciiart-logo": "^0.2.6",
+    "clear": "^0.1.0",
+    "clui": "^0.3.6",
     "console.table": "^0.10.0",
     "express": "^4.17.1",
     "inquirer": "^7.3.3",
