@@ -15,9 +15,6 @@ class DB {
     findAllEmployees() {
         return this.connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.dept_name FROM employee INNER JOIN role ON role_id=role.id INNER JOIN department ON department.id=role.department_id ORDER BY first_name;");
     }
-    
-
-
         
     findAllRole() {
         return this.connection.query("SELECT department.dept_name, role.title, role.salary FROM department INNER JOIN role ON department.id=role.department_id ORDER BY dept_name");
@@ -47,13 +44,13 @@ class DB {
 
     //delete department roles and employee
     deleteEmployee(employeeId){
-        return this.connection.query(`DELETE FROM employee WHERE id=${employeeId}`);
+        return this.connection.query(`DELETE FROM employee WHERE role_id =${employeeId};`);
     }
     deleteRole(roleId){
-        return this.connection.query (`DELETE FROM role WHERE id=${roleId}`);
+        return this.connection.query (`DELETE FROM role WHERE id=${roleId};`);
     }
     deleteDeparment(departmentId){
-        return this.connection.query (`DELETE FROM department WHERE id=${departmentId}`);
+        return this.connection.query (`DELETE FROM department WHERE id=${departmentId};`);
     }
 }
 

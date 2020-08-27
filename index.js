@@ -191,6 +191,36 @@ function addEmployee() {
   });
 }
 
+// function to remove employee
+function removeEmployee() {
+  var empRole = "SELECT * FROM employee ORDER BY id";
+  connection.query(empRole, function (err, res) {
+    if (err) throw err;
+    var empArr = [];
+    for (var i = 0; i < res.length; i++) {
+      empArr.push(res[i].role_id + ": " + res[i].first_name + " " + res[i].last_name);
+    }
+    inquirer.prompt([
+        {
+          type: "list",
+          message: "Please select the employee you would like to delete",
+          choices: empArr,
+          name: "role_id",
+        },
+      ])
+      .then(async function (answer) {
+            const parsed = parseInt(answer.role_id.split(" "));
+            console.log(parsed)
+            const removeEmp = await db.deleteEmployee(parsed);
+            const showEmpDel = await db.findAllEmployees();
+            console.table(showEmpDel);
+            console.log(emoji.get('broken_heart') + "  Employee deleted! Updated list is above. " + emoji.get('broken_heart'));
+            loadMainPrompts();
+      });
+  });
+}
+
+
 // add a new role from the existing deptartments with base salary
 function addRole() {
   var dept = "SELECT * FROM department ORDER BY id";
