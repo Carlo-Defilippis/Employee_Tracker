@@ -6,11 +6,8 @@ const { async } = require("rxjs");
 require("console.table");
 var connection = require("./db/connection.js");
 var emoji = require('node-emoji');
-var CLI = require('clui')
-
+var CLI = require('clui');
 const util = require("util");
-const { clearScreenDown } = require("readline");
-// const mysql = require('mysql');
 
 connection.connect(function(err) {
   if (err) {
@@ -22,7 +19,7 @@ connection.connect(function(err) {
 connection.query = util.promisify(connection.query);
 
 
-function init() {
+function start() {
   const logoText = logo({ name: "Employee Manager" }).render();
 
   console.log(logoText);
@@ -31,7 +28,7 @@ loadMainPrompts();
 }
 
 async function loadMainPrompts() {
-  console.log("This is the load prompts function")
+  console.log("This is the load prompts function");
   const { choice } = await inquirer.prompt([
       {
         type: "list",
@@ -41,14 +38,6 @@ async function loadMainPrompts() {
           {
             name: "View all employees",
             value: "VIEW_EMPLOYEES",
-          },
-          {
-            name: "View all employees by department",
-            value: "VIEW_EMPLOYEES_BY_DEPARTMENT",
-          },
-          {
-            name: "View all employees by manager",
-            value: "VIEW_EMPLOYEES_BY_MANAGER",
           },
           {
             name: "Add employee",
@@ -93,7 +82,7 @@ async function loadMainPrompts() {
           {
             name: "Quit",
             value: "QUIT",
-          }, new inquirer.Separator()
+          },
         ]
       }
     ]);
@@ -102,10 +91,6 @@ async function loadMainPrompts() {
 switch (choice) {
   case "VIEW_EMPLOYEES":
     return viewEmployees();
-  case "VIEW_EMPLOYEES_BY_DEPARTMENT":
-    return viewEmployeesByDepartment();
-  case "VIEW_EMPLOYEES_BY_MANAGER":
-    return viewEmployeesByManager();
   case "ADD_EMPLOYEE":
     return addEmployee();
   case "REMOVE_EMPLOYEE":
@@ -129,8 +114,7 @@ switch (choice) {
   }
 }
 
-
-init();
+start();
 // view all departments
 async function viewDepartments() {
   const departments = await db.findAllDepartments();
@@ -138,20 +122,12 @@ async function viewDepartments() {
     loadMainPrompts();
 }
 
-
-
-
-
 // view employees with their role title, role salary, and dept_name
 async function viewEmployees() {
   const employees = await db.findAllEmployees();
     console.table(employees);
     loadMainPrompts();
 }
-
-
-
-
 
 // view roles combined with the department name
 async function viewRole() {
@@ -170,10 +146,12 @@ function addDepartment() {
     })
     .then(async function (answer) {
       const addDepart = await db.createDepartment(answer);
-      console.table(addDepart);
+      const showDept = await db.findAllDepartments();
+      console.table(showDept);
+      console.log(emoji.get('heart') + "  New department added! " + emoji.get('heart'));
       loadMainPrompts();
-      });
-    };
+    });
+  }
 
 // add a new employee with first and last name, and role title
 function addEmployee() {
@@ -203,24 +181,12 @@ function addEmployee() {
           name: "role",
         },
       ])
-      .then(function (answer) {
-        var query = "INSERT INTO employee SET ?";
-        connection.query(
-          query,
-          {
-            first_name: answer.first,
-            last_name: answer.last,
-            role_id: parseInt(answer.role.split(" ")),
-          },
-          function (err, res) {
-            if (err) throw err;
-            console.log("Added new employee");
-            console.log(
-              "============================================================"
-            );
+      .then(async function (answer) {
+            const addEmp = await db.createEmployee(answer);
+            const showEmp = await db.findAllEmployees();
+            console.table(showEmp);
+            console.log(emoji.get('heart') + "  New employee added! " + emoji.get('heart'));
             loadMainPrompts();
-          }
-        );
       });
   });
 }
@@ -233,7 +199,7 @@ function addRole() {
     for (var i = 0; i < res.length; i++) {
       deptArr.push(res[i].id + ": " + res[i].dept_Name);
     }
-    console.log(deptArr)
+    console.log(deptArr);
     inquirer
       .prompt([
         {
@@ -254,7 +220,6 @@ function addRole() {
         },
       ])
       .then(async function (answer) {
-        // var query = "INSERT INTO role SET ?";
         const addRole = await db.createRole(answer);
         const showRoles = await db.findAllRole();
         console.table(showRoles);
@@ -263,8 +228,6 @@ function addRole() {
       });
   });
 }
-
-
 
 // exit out of the application
 function quit() {
@@ -281,5 +244,3 @@ setInterval(function () {
   }
 }, 500);
 }
-
-exports.data = loadMainPrompts;

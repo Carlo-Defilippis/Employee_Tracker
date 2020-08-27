@@ -13,7 +13,7 @@ class DB {
 
 
     findAllEmployees() {
-        return this.connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.dept_name FROM employee INNER JOIN role ON role_id=role.id INNER JOIN department ON department.id=role.department_id;");
+        return this.connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.dept_name FROM employee INNER JOIN role ON role_id=role.id INNER JOIN department ON department.id=role.department_id ORDER BY first_name;");
     }
     
 
@@ -26,18 +26,23 @@ class DB {
     //create employee department role
 
     createEmployee(employee) {
-        return this.connection.query("INSERT INTO employee SET ?", employee);
-       
+        return this.connection.query("INSERT INTO employee SET ?",  { 
+            first_name: employee.first,
+            last_name: employee.last,
+            role_id: parseInt(employee.role.split(" ")) 
+        });
     }
     createDepartment(department) {
-        return this.connection.query("INSERT INTO department SET ?", department);
+        return this.connection.query("INSERT INTO department SET ?", {
+            dept_Name: department.department,
+        });
     }
     createRole(role) {
         return this.connection.query("INSERT INTO role SET ?", {
             title: role.title,
             salary: role.salary,
             department_id: parseInt(role.department.split(" ")),
-          });
+        });
     }
 
     //delete department roles and employee
