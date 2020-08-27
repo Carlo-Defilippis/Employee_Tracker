@@ -1,7 +1,7 @@
 USE employee_trackerDB;
 -- add departments
 INSERT INTO department
-    (name)
+    (deptName)
 VALUES
     ('Sales'),
     ('Engineering'),
