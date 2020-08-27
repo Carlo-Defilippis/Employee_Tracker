@@ -5,7 +5,7 @@ const { inherits } = require("util");
 const { async } = require("rxjs");
 require("console.table");
 var connection = require("./db/connection.js");
-var data = require("./db/index.js");
+var DataB = require("./db/index.js");
 var emoji = require('node-emoji');
 
 
@@ -146,7 +146,7 @@ function viewDepartments() {
 
 // view employees with their role title, role salary, and dept_name
 async function viewEmployees() {
-  const employees = await data.findAllEmployees();
+  const employees = new DataB().findAllEmployees();
   console.log("This is the find all employee function from connection.js: ", employees);
   // var query =
   //   "SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.dept_name FROM employee INNER JOIN role ON role_id=role.id INNER JOIN department ON department.id=role.department_id;";
@@ -154,8 +154,18 @@ async function viewEmployees() {
   //   if (err) throw err;
   //   // console.log("all employees: ", res);
   //   console.table(res);
-  //   console.log("============================================================");
+    console.log("============================================================");
+  function wait(ms)
+{
+    var d = new Date();
+    var d2 = null;
+    do { d2 = new Date(); }
+    while(d2-d < ms);
+}
+wait(100);
+
     loadMainPrompts();
+    console.log("============================================================");
   // });
 }
 
