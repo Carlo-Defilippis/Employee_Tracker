@@ -28,7 +28,6 @@ loadMainPrompts();
 }
 
 async function loadMainPrompts() {
-  console.log("This is the load prompts function");
   const { choice } = await inquirer.prompt([
       {
         type: "list",
@@ -122,7 +121,6 @@ function addEmployee() {
     for (var i = 0; i < res.length; i++) {
       empArr.push(res[i].id + ": " + res[i].title);
     }
-    console.log("empArr: ", empArr);
     inquirer.prompt([
         {
           type: "input",
@@ -170,7 +168,6 @@ function removeEmployee() {
       ])
       .then(async function (answer) {
             const parsed = parseInt(answer.role_id.split(" "));
-            console.log(parsed)
             const removeEmp = await db.deleteEmployee(parsed);
             const showEmpDel = await db.findAllEmployees();
             console.table(showEmpDel);
